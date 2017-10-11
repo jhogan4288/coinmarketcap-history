@@ -14,21 +14,25 @@ Rather than getting the exchange rate at the exact moment of your trade, which i
 This script requires Python 2 to be available at /usr/bin/python.  This is the case by default with macOS.
 
 **Usage:**
- 
-```
-./coinmarketcap-usd-history.py <currency> <start_year> <end_year>
-```
 
+*From the command line:*
+```./coinmarketcap_usd_history.py <currency> <start_year> <end_year>```
+
+*From another python module:*
+   You may need to add the path to `coinmarketcap_usd_history.py` in your `sys.path` through a command like the following:
+   `sys.path.append(<path_to_coinmarketcap_usd_history.py_parent_folder>)`. And in another python module perform this to obtain the dataframe:
+   `df = coinmarketcap_usd_history.main(['bitcoin','2017','2017','--toDf'])`. Note that if you just wish to see the output of the call in another python module, simply omit the `'--toDf'` part.
+  
 **Where:**
 
 * `<currency>` is the (case-insensitive) name of the currency / token as displayed on CoinMarketCap, with dashes in place of spaces
 * `<start_year>` is the beginning of the range to fetch data for
 * `<end_year>` is the end of the range to fetch data for
 
-The above information can also be found by running: `python coinmarketcap-usd-history.py -h` in your terminal.
+The above information can also be found by running: `python coinmarketcap_usd_history.py -h` in your terminal.
 
 You can, of course, write results to a file with output redirection:
 
 ```
-./coinmarketcap-usd-history.py <currency> <start_year> <end_year> > <output_filename>
+./coinmarketcap_usd_history.py <currency> <start_year> <end_year> > <output_filename>
 ```
