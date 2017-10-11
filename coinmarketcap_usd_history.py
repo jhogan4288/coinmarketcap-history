@@ -89,7 +89,7 @@ def extract_data(html):
   header.append('Average (High + Low / 2)')
 
   body = re.search(r'<tbody>(.*)</tbody>', html, re.DOTALL).group(1)
-  raw_rows = re.findall(r'<tr[^>]*>\s*<td[^>]*>([^<]+)</td>\s*<td[^>]*>([^<]+)</td>\s*<td[^>]*>([^<]+)</td>\s*<td[^>]*>([^<]+)</td>\s*<td[^>]*>([^<]+)</td>\s*<td[^>]*>([^<]+)</td>\s*<td[^>]*>([^<]+)</td>\s*</tr>', body)
+  raw_rows = re.findall(r'<tr[^>]*>' + r'\s*<td[^>]*>([^<]+)</td>'*7 + r'\s*</tr>', body)
 
   # strip commas
   rows = []
@@ -124,9 +124,10 @@ def initialize_arg_parser():
   args = parser.parse_args()
 
   print "** Arguments passed **"
-  print "currency:    %s"   % args.currency
+  print "currency:    %s" % args.currency
   print "start_year:  %s" % args.start_year
-  print "end_year:    %s"   % args.end_year
+  print "end_year:    %s" % args.end_year
+  print "--toDf:      %s" % args.toDf
   print "**********************"
 
   return args
