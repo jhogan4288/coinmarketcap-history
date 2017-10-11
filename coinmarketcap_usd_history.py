@@ -118,6 +118,7 @@ def render_csv_data(header, rows):
   for row in rows:
     print(','.join(row))
 
+# --------------------------------------------- Util Methods -----------------------------------------------------------
 
 def initialize_arg_parser():
   # ----------- For user convenience. Shows required + optional parameters in the command line. ------------------------
@@ -132,6 +133,15 @@ def initialize_arg_parser():
 
   return args
 
+def processDataFrame(df):
+  assert isinstance(df, pd.DataFrame), "df is not a pandas DataFrame."
+
+  cols = list(df.columns.values)
+  cols.remove('Date')
+  df.loc[:,'Date'] = pd.to_datetime(df.Date)
+  for col in cols: df.loc[:,col] = df[col].apply(lambda x: float(x))
+  return df.sort_values(by='Date').reset_index(drop=True)
+# ----------------------------------------------------------------------------------------------------------------------
 
 def main(args=None):
   # assert that args is a list
@@ -147,7 +157,7 @@ def main(args=None):
   header, rows = extract_data(html) 
   
   if(args.toDf):
-    return pd.DataFrame(data=rows,columns=header)	
+    return processDataFrame(pd.DataFrame(data=rows,columns=header))
   else:  
     render_csv_data(header, rows)
 
