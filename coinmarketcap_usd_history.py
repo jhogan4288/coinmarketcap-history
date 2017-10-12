@@ -10,7 +10,6 @@ import sys
 import re
 import urllib2
 import argparse
-import pandas as pd
 
 # So that we can calll arg_parser on arguments passed through another module or in jupyter notebook.
 #  This facilitates work with the dataFrames.
@@ -134,6 +133,7 @@ def initialize_arg_parser():
   return args
 
 def processDataFrame(df):
+  import pandas as pd
   assert isinstance(df, pd.DataFrame), "df is not a pandas DataFrame."
 
   cols = list(df.columns.values)
@@ -157,6 +157,7 @@ def main(args=None):
   header, rows = extract_data(html) 
   
   if(args.toDf):
+    import pandas as pd
     return processDataFrame(pd.DataFrame(data=rows,columns=header))
   else:  
     render_csv_data(header, rows)
