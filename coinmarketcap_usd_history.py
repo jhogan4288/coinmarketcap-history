@@ -10,50 +10,68 @@ import sys
 import re
 import urllib2
 import argparse
+import datetime
 
-# So that we can calll arg_parser on arguments passed through another module or in jupyter notebook.
-#  This facilitates work with the dataFrames.
 parser = argparse.ArgumentParser()
-parser.add_argument("currency", help="This is the name of the crypto, as is shown on coinmarketcap. For BTC, "
-                                     "for example, type: bitcoin.", type=str)
-parser.add_argument("start_year", help="Start year from which you wish to retrieve historical data. Data will be "
-                                       "retrieved from start_year-01-01 by default.", type=str)
-parser.add_argument("end_year", help="Last year (inclusive) for historical data retrieval. Data will be retrieved "
-                                     "for up to end_year-31-12 by default.", type=str)
-parser.add_argument("--toDf", help="If true, returns a pandas DataFrame.",action='store_true')
+
+parser.add_argument("currency",    help="This is the name of the crypto, as is shown on coinmarketcap. For BTC, "
+                                        "for example, type: bitcoin.", type=str)
+parser.add_argument("start_date",  help="Start date from which you wish to retrieve the historical data. For example, "
+                                        "'2017-10-01'.", type=str)
+parser.add_argument("end_date",    help="End date for the historical data retrieval. If you wish to retrieve all the "
+                                        "data then you can give a date in the future. Same format as in start_date "
+                                        "'yyyy-mm-dd'.", type=str)
+parser.add_argument("--dataframe", help="If present, returns a pandas DataFrame.",action='store_true')
 
 def parse_options(args):
   """
   Extract parameters from command line.
   """
 
-  arg_currency   = args.currency.lower()
-  arg_start_year = args.start_year
-  arg_end_year   = args.end_year
+  currency   = args.currency.lower()
+  start_date = args.start_date
+  end_date   = args.end_date
+
+  start_date_split = start_date.split('-')
+  end_date_split   = end_date.split('-')
+
+  start_year = int(start_date_split[0])
+  end_year   = int(end_date_split[0])
+
+  # String validation
+  pattern    = re.compile('[2][0][1][0-9]-[0-1][0-9]-[0-3][0-9]')
+  if not re.match(pattern, start_date):
+    print('Invalid format for the start_date: ' + start_date + ". Should be of the form: yyyy-mm-dd.")
+  if not re.match(pattern, end_date):
+    print('Invalid format for the end_date: '   + end_date   + ". Should be of the form: yyyy-mm-dd.")
+  # Datetime validation for the correctness of the date. Will throw a ValueError if not valid
+  datetime.datetime(start_year,int(start_date_split[1]),int(start_date_split[2]))
+  datetime.datetime(end_year,  int(end_date_split[1]),  int(end_date_split[2]))
 
   # CoinMarketCap's price data (at least for Bitcoin, presuambly for all others) only goes back to 2013
-  invalid_args =                 int(arg_start_year) < 2013
-  invalid_args = invalid_args or int(arg_end_year)   < 2013
-  invalid_args = invalid_args or int(arg_end_year)   < int(arg_start_year)
+  invalid_args =                 start_year < 2013
+  invalid_args = invalid_args or end_year   < 2013
+  invalid_args = invalid_args or end_year   < start_year
 
   if invalid_args:
-    print('Usage: ' + __file__ + ' <currency> <start_year> <end_year> --toDf');
+    print('Usage: ' + __file__ + ' <currency> <start_date> <end_date> --dataframe')
     sys.exit(1)
 
-  return arg_currency, arg_start_year, arg_end_year
+  start_date = start_date_split[0]+ start_date_split[1] + start_date_split[2]
+  end_date   = end_date_split[0]  + end_date_split[1]   + end_date_split[2]
+
+  return currency, start_date, end_date
 
 
-def download_data(currency, start_year, end_year):
+def download_data(currency, start_date, end_date):
   """
   Download HTML price history for the specified cryptocurrency and time range from CoinMarketCap.
   """
 
-  start_date = start_year + '0101'
-  end_date = end_year + '1231'
-  url = 'https://coinmarketcap.com/currencies/' + currency + '/historical-data/' + '?start=' + start_date + '&end=' + end_date
+  url = 'https://coinmarketcap.com/currencies/' + currency + '/historical-data/' + '?start=' \
+                                                + start_date + '&end=' + end_date
 
   try:
-    
     page = urllib2.urlopen(url,timeout=10)
     if page.getcode() != 200:
       raise Exception('Failed to load page') 
@@ -65,10 +83,10 @@ def download_data(currency, start_year, end_year):
     print('Did you use a valid CoinMarketCap currency?\nIt should be entered exactly as displayed on CoinMarketCap.com (case-insensitive), with dashes in place of spaces.')
     
     if hasattr(e, 'message'):
-	print("Error message: " + e.message)
+      print("Error message: " + e.message)
     else:
-	print(e)	
-    sys.exit(1)
+      print(e)
+      sys.exit(1)
 
   return html
 
@@ -119,19 +137,6 @@ def render_csv_data(header, rows):
 
 # --------------------------------------------- Util Methods -----------------------------------------------------------
 
-def initialize_arg_parser():
-  # ----------- For user convenience. Shows required + optional parameters in the command line. ------------------------
-  args = parser.parse_args()
-
-  print "** Arguments passed **"
-  print "currency:    %s" % args.currency
-  print "start_year:  %s" % args.start_year
-  print "end_year:    %s" % args.end_year
-  print "--toDf:      %s" % args.toDf
-  print "**********************"
-
-  return args
-
 def processDataFrame(df):
   import pandas as pd
   assert isinstance(df, pd.DataFrame), "df is not a pandas DataFrame."
@@ -141,6 +146,7 @@ def processDataFrame(df):
   df.loc[:,'Date'] = pd.to_datetime(df.Date)
   for col in cols: df.loc[:,col] = df[col].apply(lambda x: float(x))
   return df.sort_values(by='Date').reset_index(drop=True)
+
 # ----------------------------------------------------------------------------------------------------------------------
 
 def main(args=None):
@@ -148,15 +154,15 @@ def main(args=None):
   if(args is not None):
     args = parser.parse_args(args)
   else:
-    args = initialize_arg_parser()
+    args = parser.parse_args()
   
-  currency, start_year, end_year = parse_options(args)
+  currency, start_date, end_date = parse_options(args)
   
-  html = download_data(currency, start_year, end_year)
+  html = download_data(currency, start_date, end_date)
   
   header, rows = extract_data(html) 
   
-  if(args.toDf):
+  if(args.dataframe):
     import pandas as pd
     return processDataFrame(pd.DataFrame(data=rows,columns=header))
   else:  
