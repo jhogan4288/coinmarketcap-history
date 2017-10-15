@@ -41,9 +41,9 @@ def parse_options(args):
   # String validation
   pattern    = re.compile('[2][0][1][0-9]-[0-1][0-9]-[0-3][0-9]')
   if not re.match(pattern, start_date):
-    print('Invalid format for the start_date: ' + start_date + ". Should be of the form: yyyy-mm-dd.")
+    raise ValueError('Invalid format for the start_date: ' + start_date + ". Should be of the form: yyyy-mm-dd.")
   if not re.match(pattern, end_date):
-    print('Invalid format for the end_date: '   + end_date   + ". Should be of the form: yyyy-mm-dd.")
+    raise ValueError('Invalid format for the end_date: '   + end_date   + ". Should be of the form: yyyy-mm-dd.")
   # Datetime validation for the correctness of the date. Will throw a ValueError if not valid
   datetime.datetime(start_year,int(start_date_split[1]),int(start_date_split[2]))
   datetime.datetime(end_year,  int(end_date_split[1]),  int(end_date_split[2]))
