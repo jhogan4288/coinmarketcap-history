@@ -16,13 +16,13 @@ This script requires Python 2 to be available at /usr/bin/python.  This is the c
 **Usage:**
 
 Just run in the terminal:
-```./coinmarketcap_usd_history.py <currency> <start_year> <end_year>```
+```./coinmarketcap_usd_history.py <currency> <start_date> <end_date>```
    
 **Where:**
 
 * `<currency>` is the (case-insensitive) name of the currency / token as displayed on CoinMarketCap, with dashes in place of spaces
-* `<start_year>` is the beginning of the range to fetch data for
-* `<end_year>` is the end of the range to fetch data for
+* `<start_date>` is the beginning of the range to fetch data for. For example, 2017-10-01 (for 2017 October 10th)
+* `<end_year>` is the end of the range to fetch data for. You may use the date in the future here to obtain the latest data. Format is the same as in the start date.
 
 The above information can also be found by running: `python coinmarketcap_usd_history.py -h` in your terminal.
 
