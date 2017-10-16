@@ -29,7 +29,7 @@ The above information can also be found by running: `python coinmarketcap_usd_hi
 You can, of course, write the results to a file with the output redirection:
 
 ```
-./coinmarketcap_usd_history.py <currency> <start_year> <end_year> > <output_filename>
+./coinmarketcap_usd_history.py <currency> <start_date> <end_date> > <output_filename>
 ```
 **Using in another python module:**
 
