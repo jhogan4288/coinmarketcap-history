@@ -8,7 +8,7 @@ CoinMarketCap USD Price History
 
 import sys
 import re
-import urllib2
+import requests
 import argparse
 import datetime
 
@@ -72,16 +72,12 @@ def download_data(currency, start_date, end_date):
                                                 + start_date + '&end=' + end_date
 
   try:
-    page = urllib2.urlopen(url,timeout=10)
-    if page.getcode() != 200:
-      raise Exception('Failed to load page') 
-    html = page.read()
-    page.close()
+    html = requests.get(url).text
 
   except Exception as e:
     print('Error fetching price data from ' + url)
     print('Did you use a valid CoinMarketCap currency?\nIt should be entered exactly as displayed on CoinMarketCap.com (case-insensitive), with dashes in place of spaces.')
-    
+
     if hasattr(e, 'message'):
       print("Error message: " + e.message)
     else:
@@ -101,17 +97,17 @@ def extract_data(html):
   We need to derive the "average" price for the provided data.
   """
 
-  head = re.search(r'<thead>(.*)</thead>', html, re.DOTALL).group(1)
+  head = re.search('<thead>(.*)</thead>', html, re.DOTALL)[0]
   header = re.findall(r'<th .*>([\w ]+)</th>', head)
   header.append('Average (High + Low / 2)')
 
-  body = re.search(r'<tbody>(.*)</tbody>', html, re.DOTALL).group(1)
+  body = re.search(r'<tbody>(.*)</tbody>', html, re.DOTALL)[0]
   raw_rows = re.findall(r'<tr[^>]*>' + r'\s*<td[^>]*>([^<]+)</td>'*7 + r'\s*</tr>', body)
 
   # strip commas
   rows = []
   for row in raw_rows:
-    row = [ field.translate(None, ',') for field in row ]
+    row = [ field.replace(',', '') for field in row ]
     rows.append(row)
 
   # calculate averages
@@ -162,17 +158,18 @@ def main(args=None):
     args = parser.parse_args(args)
   else:
     args = parser.parse_args()
-  
+
+
   currency, start_date, end_date = parse_options(args)
-  
+
   html = download_data(currency, start_date, end_date)
-  
-  header, rows = extract_data(html) 
-  
+
+  header, rows = extract_data(html)
+
   if(args.dataframe):
     import pandas as pd
     return processDataFrame(pd.DataFrame(data=rows,columns=header))
-  else:  
+  else:
     render_csv_data(header, rows)
 
 
