@@ -27,7 +27,7 @@ Dependencies:
 
 First install the required dependencies:
 ```shell
-$ pip install asyncio aiohttp aiodns pandas tqdm
+$ pip install asyncio aiohttp aiodns pandas tqdm requests
 ```
 
 Then install coinmarketcap-history with pip:
